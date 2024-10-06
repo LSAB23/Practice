@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Add Question
+{% endblock %}
+
+{% block body %}
+    Hello world
+    <p id="error"></p>
+    <form hx-encoding="multipart/form-data" hx-post="{% url 'add_questions' quiz_id=quiz_id%}" hx-trigger="submit", hx-target="#error" hx-swap="innerhtml">
+    {% csrf_token %}
+    <div id="question">
+    {{question}}
+    </div>
+    {{answer}}
+    <div id="correct_ans">
+    {{correct}}
+    </div>
+    {% url 'add_questions' quiz_id=quiz_id%}
+    <button type="submit">Submit</button>
+    </form>
+    <div>
+        <button hx-get="{% url 'get-form' what_form='ques'%}" hx-target="#question">Replace question one with text and image</button>
+        <button hx-get="{% url 'get-form' what_form='text_ans'%}" hx-target="#id_answer" hx-swap="afterend">Add Another Answer Feild</button>
+        <button hx-get="{% url 'get-form' what_form='image_ans'%}" hx-target="#id_answer" hx-swap="afterend">Image only anwser</button>
+        <button hx-get="{% url 'get-form' what_form='ans'%}" hx-target="#id_answer" hx-swap="afterend">Image and text Answer </button>
+        <button hx-get="{% url 'get-form' what_form='text&image ans'%}" hx-target="#correct_ans" hx-swap="innerhtml">Replace Text correct with correct Answer with Image and text</button>
+    </div>
+{% endblock %}
