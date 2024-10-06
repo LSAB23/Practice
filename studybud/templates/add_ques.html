@@ -5,7 +5,16 @@ Add Question
 {% endblock %}
 
 {% block body %}
-    Hello world
+    <div id="questions" hx-swap-oob="true">
+        <h1> Questions </h1>
+        {% for question in questions %}
+        <div class="question">
+            {{question.ques}}
+            <button type="button" value="{{question.ques_id}}">Edit</button>
+        </div>
+        {% endfor %}
+    </div>
+
     <p id="error"></p>
     <form hx-encoding="multipart/form-data" hx-post="{% url 'add_questions' quiz_id=quiz_id%}" hx-trigger="submit", hx-target="#error" hx-swap="innerhtml">
     {% csrf_token %}

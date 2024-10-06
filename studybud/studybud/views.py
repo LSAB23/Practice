@@ -42,6 +42,7 @@ def add_questions(request, quiz_id):
     question = ques_no_image()
     answer = ans_text()
     correct_answer = correct_ans_text()
+    questions = Questions.objects.all()
     if request.method == 'POST':
         post_info = request.POST
         images = request.FILES
@@ -68,9 +69,10 @@ def add_questions(request, quiz_id):
         
                 ans_id = id_gen()
                 Answers.objects.create(ans_id=ans_id, quiz_id=quiz_inst, ques_id=ques_inst, ans=correct_anss,ans_image=correct_ans_image, ans_correct=True).save()
+                print(ques_id)
                 if answer_image:
                     print('theres image')
-                return HttpResponse(' Question & Answers created ')
+                return render(request, 'question.html', {'ques_id':ques_id, 'quess':quess})
             else:
                 print(ques_no_image(post_info).is_valid(), 'ques no image')
                 return HttpResponse('correct answer is not in answers')
@@ -82,6 +84,7 @@ def add_questions(request, quiz_id):
         'quiz_id': quiz_id,
         'answer': answer,
         'correct': correct_answer,
+        'questions': questions,
     }
     return render(request, 'add_ques.html', context)
 
