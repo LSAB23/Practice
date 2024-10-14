@@ -1,4 +1,9 @@
-<div hx-swap-oob="beforeend:#questions">
-    <div>{{quess}} <button type="button" value="{{ques_id}}">Edit</button>
+<div hx-swap-oob="beforeend:#questions" >
+    <div class="question" id="h{{ques_id}}">
+        {{quess}} <button type="button" value="{{ques_id}}">Edit</button>
+        <button type="button" hx-get="{% url 'delete' type='question' id=ques_id%}" hx-target="#h{{ques_id}}">Delete</button>
     </div>
 </div>
+<script>
+    document.getElementById('question_form').reset()
+</script>

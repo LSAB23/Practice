@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import Field
 
 class quiz(forms.Form):
     quiz_name = forms.CharField(label='Name of Test: ', widget=forms.TextInput(attrs={'placeholder': 'Enter the name you want the quiz to have ..'}))
@@ -12,12 +13,18 @@ class ques_no_image(ques):
 
 class ans(forms.Form):
     answer = forms.CharField(label='Answer: ')
-    ans_img = forms.ImageField(label='Add Image (Answer):')
+    answer_with_image = forms.CharField(label='Answer: ')
+    ans_img = forms.ImageField(label='Add Image (Answer): ')
 
 class ans_text(ans):
     ans_img = None
+    answer_with_image = None
 
 class ans_image(ans):
+    answer = None
+    answer_with_image = None
+
+class ans_img_text(ans):
     answer = None
 
 class correct_ans(forms.Form):

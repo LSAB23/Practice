@@ -113,3 +113,14 @@ STATICFILES_DIRS =[os.path.join(BASE_DIR, 'static')]
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Cache
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "studybud_cache",
+    }
+}
+# Sessions
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+# SESSION_COOKIE_AGE = 12900 use it to time the age of cookies

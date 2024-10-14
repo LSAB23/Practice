@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse
-from .forms import quiz, ques, ques_no_image, ans_text, correct_ans_text, ans, ans_image, correct_ans_image, correct_ans
+from .forms import quiz, ques, ques_no_image, ans_text, correct_ans_text, ans_img_text, ans_image, correct_ans_image, correct_ans, ans
 from .models import Quiz, Questions, Answers
 from django.urls import reverse
 from secrets import choice
@@ -15,6 +15,7 @@ def id_gen(number=7):
 def home(request):
 
     quiz_form  = quiz()
+    quizes = Quiz.objects.all()
     if request.method == 'POST':
         valid = quiz(request.POST).is_valid()
         if valid:
@@ -32,7 +33,7 @@ def home(request):
                     quiz_name = quiz_name + id_gen(3)
                     Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
         return HttpResponse('Quiz Created you can now add questions')
-    return render(request, 'home.html', {'quiz_form':quiz_form})
+    return render(request, 'home.html', {'quiz_form':quiz_form, 'quizes': quizes})
 
 def add_questions(request, quiz_id):
     check_exist = Quiz.objects.filter(quiz_id=quiz_id).exists()
@@ -48,9 +49,9 @@ def add_questions(request, quiz_id):
         images = request.FILES
         anss = post_info.getlist('answer')
 
-        if ques_no_image(post_info).is_valid() and ans_text(post_info).is_valid() and correct_ans_text(post_info).is_valid() or ques(post_info).is_valid() or ans(post_info).is_valid() or correct_ans(post_info).is_valid():
+        if ques_no_image(post_info).is_valid() and ans_text(post_info).is_valid() and correct_ans_text(post_info).is_valid() or ques(post_info).is_valid() or ans(post_info).is_valid() or correct_ans(post_info).is_valid() or ans_img_text(post_info) or correct_ans_image(post_info).is_valid() or ans_image(post_info).is_valid():
             
-            if post_info.get('correct_answer') in anss:
+            if post_info.get('correct_answer') in anss or post_info.get('answer_with_image'):
                 ques_id = id_gen()
                 quess = post_info.get('question')
                 ques_image = post_info.get('image')
@@ -59,7 +60,7 @@ def add_questions(request, quiz_id):
                 
                 answer_image = post_info.get('answer_with_image')
 
-                correct_ans_image = images.get('correct_img')
+                correct_ans_img = images.get('correct_img')
                 correct_anss = post_info.get('correct_answer')
                 Questions.objects.create(quiz_id=quiz_inst, ques_id=ques_id,ques=quess, ques_image=ques_image).save()
 
@@ -68,17 +69,15 @@ def add_questions(request, quiz_id):
                     Answers.objects.create(ans_id=ans_id, quiz_id=quiz_inst, ques_id=ques_inst,ans=answer,ans_image=answer_image).save()
         
                 ans_id = id_gen()
-                Answers.objects.create(ans_id=ans_id, quiz_id=quiz_inst, ques_id=ques_inst, ans=correct_anss,ans_image=correct_ans_image, ans_correct=True).save()
+                Answers.objects.create(ans_id=ans_id, quiz_id=quiz_inst, ques_id=ques_inst, ans=correct_anss,ans_image=correct_ans_img, ans_correct=True).save()
                 print(ques_id)
                 if answer_image:
                     print('theres image')
                 return render(request, 'question.html', {'ques_id':ques_id, 'quess':quess})
             else:
-                print(ques_no_image(post_info).is_valid(), 'ques no image')
-                return HttpResponse('correct answer is not in answers')
+                return HttpResponse('Correct answer is not in answers')
         else:
-            print(ques_no_image(post_info).is_valid(), 'ques no image')
-            return HttpResponse('try checking your input and try again')
+            return HttpResponse('Try checking your input and try again')
     context = {
         'question': question,
         'quiz_id': quiz_id,
@@ -89,16 +88,23 @@ def add_questions(request, quiz_id):
     return render(request, 'add_ques.html', context)
 
 def get_form(request, what_form):
-    print(what_form)
     forms = {
         'ques':ques(),
         'text_ans':ans_text(),
-        'ans':ans(),
-        'image_ans': ans_image(),
-        'correct_ans': correct_ans_image(),
-        'text&image ans': correct_ans(),
+        'image_only_ans': ans_image(),
+        'ans_with_image':ans_img_text(),
+        'correct_ans_img_only': correct_ans_image(),
+        'correct_ans': correct_ans(),
     }
     get_form = forms.get(what_form)
     if get_form:
         return HttpResponse(f'{get_form}')
     return HttpResponse('Form do not exist')
+
+def delete(request, type, id):
+    print('type:',type, 'id:',id)
+    if type == 'quiz':
+        return HttpResponse('this is a quiz')
+    if type == 'question':
+        print(Questions.objects.filter(ques_id=id).delete())
+        return HttpResponse('it works')

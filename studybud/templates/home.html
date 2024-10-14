@@ -5,7 +5,13 @@ HOME
 {% endblock %}
 
 {% block body %}
-    Hello world
+    <div id="edit_tests">
+        {% for quiz in quizes %}
+        <div>
+            {{quiz.quiz_name}} <button type="button" value="{{quiz.quiz_id}}">Edit</button>
+        </div>            
+        {%  endfor %}
+    </div>
     <form hx-post="{% url 'home' %}" hx-trigger="submit">
     {% csrf_token %}
     {{quiz_form}}
