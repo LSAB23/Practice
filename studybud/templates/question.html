@@ -1,6 +1,6 @@
 <div hx-swap-oob="beforeend:#questions" >
     <div class="question" id="h{{ques_id}}">
-        {{quess}} <button type="button" value="{{ques_id}}">Edit</button>
+        {{quess}} <button type="button"><a href="{% url 'edit_questions' ques_id=ques_id%}">Edit Answers</a></button>
         <button type="button" hx-get="{% url 'delete' type='question' id=ques_id%}" hx-target="#h{{ques_id}}">Delete</button>
     </div>
 </div>

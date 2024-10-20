@@ -7,8 +7,11 @@ HOME
 {% block body %}
     <div id="edit_tests">
         {% for quiz in quizes %}
-        <div>
-            {{quiz.quiz_name}} <button type="button" value="{{quiz.quiz_id}}">Edit</button>
+        <div id="h{{quiz.quiz_id}}">
+            {{quiz.quiz_name}}
+            <button type="button"> <a href="{% url 'add_questions' quiz_id=quiz.quiz_id%}">Edit Questions</a></button>
+            <button type="button" hx-get="{% url 'delete' type='quiz' id=quiz.quiz_id%}" hx-target="#h{{quiz.quiz_id}}">Delete</button>
+
         </div>            
         {%  endfor %}
     </div>
