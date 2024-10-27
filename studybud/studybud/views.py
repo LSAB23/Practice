@@ -5,12 +5,16 @@ from django.urls import reverse
 from secrets import choice
 from string import hexdigits
 from .deleteimg import delete_image
+from itertools import zip_longest
 
 def id_gen(number=7):
     id = ''
     for len in range(number):
         id += choice(hexdigits)
     return id
+def validate_input(post_info):
+    return  ques_no_image(post_info).is_valid() and ans_text(post_info).is_valid() and correct_ans_text(post_info).is_valid() or ques(post_info).is_valid() or ans(post_info).is_valid() or correct_ans(post_info).is_valid() or ans_img_text(post_info) or correct_ans_image(post_info).is_valid() or ans_image(post_info).is_valid()
+
 
 def home(request):
 
@@ -53,7 +57,7 @@ def add_questions(request, quiz_id):
         join_answers = anss + anss_with_image
 
         # validate the forms before it start to create the question and answers
-        if ques_no_image(post_info).is_valid() and ans_text(post_info).is_valid() and correct_ans_text(post_info).is_valid() or ques(post_info).is_valid() or ans(post_info).is_valid() or correct_ans(post_info).is_valid() or ans_img_text(post_info) or correct_ans_image(post_info).is_valid() or ans_image(post_info).is_valid():
+        if validate_input(post_info):
             
             if correct_anss in join_answers:
                 ques_id = id_gen()
@@ -102,18 +106,65 @@ def add_questions(request, quiz_id):
     }
     return render(request, 'add_ques.html', context)
 
+
+
+
 def edit_question(request, ques_id):
     ques_query = Questions.objects.select_related().filter(ques_id=ques_id)
+    
     if request.method == 'POST':
-        print(ques_no_image(request.POST).is_valid(),)
+        post_info = request.POST
+        images = request.FILES
+        if validate_input(post_info):
+            quiz_id = quiz_id=post_info.get('quiz_id')
+            # edit quetions
+            ques_edit = str(post_info.get('question'))
+            ques_edit_image = images.get('image')
+            ques_id = post_info.get('ques_id')
+            print(quiz_id, ques_id)
+
+            # edit correct answer
+            correct_ans_edit = post_info.get('correct_answer')
+            correct_ans_id = post_info.get('correct_ans_id')
+            correct_ans_image_edit = images.get('correct_img')
+            
+            # edit answers
+            ans_edit= post_info.getlist('answer')
+
+            if correct_ans_edit not in ans_edit:
+                return HttpResponse('Correct answer not in answers')
+            if ques_edit_image:
+                Questions.objects.filter(ques_id=ques_id).update(ques=ques_edit, ques_image=ques_edit_image)
+
+            Questions.objects.filter(ques_id=ques_id).update(ques=ques_edit)
+            answers = list(zip_longest(post_info.getlist('ids'), ans_edit, fillvalue=None))
+            quiz_inst = Quiz(quiz_id=quiz_id)
+            ques_inst = Questions(ques_id=ques_id)
+            for id,answer_edit in answers:
+                # update_or_create was causing integrity errors so i used this instead
+                id = id
+                if id is None:
+
+                    Answers.objects.create(ans_id=id_gen(),quiz_id=quiz_inst,ques_id=ques_inst,ans=answer_edit,ans_image=None).save()
+                else:
+                    Answers.objects.filter(ans_id=id).update(ans=answer_edit)
+            if correct_ans_id:
+                Answers.objects.filter(ans_id=id).update(ans=correct_ans_edit)
+            
+            return HttpResponse('Update Done')
         return HttpResponse('it works')
-    if not ques_query.exists():
+    if not ques_query:
         return redirect('/')
+    quiz_id = ques_query.values()[0].get('quiz_id_id')
+    
     context = {
         'ques':ques_query,
-        'ques_id':ques_id,
+        'id':ques_id,
+        'quiz_id':quiz_id,
+
     }
     return render(request, 'edit_question.html', context=context)
+
 
 def get_form(request, what_form):
     forms = {
@@ -129,9 +180,14 @@ def get_form(request, what_form):
     return HttpResponse('Form do not exist')
 
 def delete(request, type, id):
+    type = type.lower()
     if type == 'quiz':
         Quiz.objects.filter(quiz_id=id).delete()
         return HttpResponse('Quiz Deleted')
     if type == 'question':
         Questions.objects.filter(ques_id=id).delete()
         return HttpResponse('Question Deleted')
+    if type == 'answer':
+        Answers.objects.filter(ans_id=id).delete()
+        return HttpResponse('Answer Deleted')
+    return 

@@ -7,34 +7,56 @@ Edit Question
 {% block body %}
 <h1>Edit Question & Answers </h1>
 <p id="error"></p>
-<form hx-encoding="multipart/form-data" hx-post="{% url 'edit_questions' ques_id=ques_id}" hx-trigger="submit", hx-target="#error" hx-swap="innerhtml" id="question_form">
+<form hx-encoding="multipart/form-data" hx-post="{% url 'edit_questions' ques_id=id}" hx-trigger="submit", hx-target="#error" hx-swap="innerhtml" id="question_form">
 {% csrf_token %}
 {% for query in ques%}
+<input type="text" name="ques_id" value="{{id}}" hidden>
+<input type="text" name="quiz_id" value="{{quiz_id}}" hidden>
 <!-- Question  -->
 <div id="question">
     <div>
         <label for="id_question">Question :</label>
         <textarea name="question" cols="40" rows="2" placeholder="hello" required id="id_question">
-{{query.ques}}
+            {{query.ques}}
         </textarea>
     </div>
-    {% for answer in query.answers_set.values%}
+    <div id="answer">
+        {% for answer in query.answers_set.values%}
+
+        
     {%  if answer.ans_correct%}
-    
-    <!-- Correct Answer -->
-    <div id="correct_ans">
-        <div>
+        {%  if answer.image is None%}
+        <input type="text" name="correct_ans_id" value="{{answer.ans_id}}" hidden>
+        <!-- Correct Answer -->
+        <div id="correct_ans">
             <label for="id_correct_answer">Correct Answer:</label>
             <input type="text" name="correct_answer" required id="id_correct_answer" value="{{answer.ans}}">
+            <button type="button" hx-get="{% url 'delete' type='answer' id=answer.ans_id%}" hx-target="#correct_ans">Delete</button>
+
         </div>
+        {%  else %}
+        <button type="button" hx-get="{% url 'delete' type='answer' id=answer.ans_id%}" hx-target="#h{{answer.ans_id}}">Delete Answer with image ( to add images just create a new question)</button>
+        {% endif %}
     {% else %}
-    <!-- Answer -->
-    <div>
-        <label for="id_answer">Answer: :</label>
-        <input type="text" name="answer" required id="id_answer" value="{{answer.ans}}">
-    </div>
-    {% endif %}    
+        {% if answer.image is None%}
+            <input type="text" name="ids" value="{{answer.ans_id}}" hidden>
+                    <!-- Answer -->
+            <div id="h{{answer.ans_id}}">
+                <label for="id_answer">Answer: </label>
+                <input type="text" name="answer" required id="id_answer" value="{{answer.ans}}">
+            <button type="button" hx-get="{% url 'delete' type='answer' id=answer.ans_id%}" hx-target="#h{{answer.ans_id}}">Delete</button>
+
+            </div>
+            {% else %}
+            <button type="button" hx-get="{% url 'delete' type='answer' id=answer.ans_id%}" hx-target="#h{{answer.ans_id}}">Delete Answer with image ( to add images just create a new question)</button>
+            {% endif %}
+        {% endif %} 
     {% endfor %}
+    </div>
     {% endfor %}
 <button type="submit">Submit</button>
+
+<div>
+    <button hx-get="{% url 'get-form' what_form='text_ans'%}" hx-target="#answer" hx-swap="afterend">Add Another Answer Feild</button>
+</div>
 {% endblock %}
