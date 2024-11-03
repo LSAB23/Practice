@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load template%}
+
+{% block title %}
+Practice
+{% endblock %}
+
+{% block body %}
+<div>
+    <form hx-post="{% url 'check' %}">
+        {% csrf_token %}
+    {% for obj in quiz %}
+        {% for question in obj.questions_set.all %}
+            <div>
+                {{forloop.counter}}.
+                <input type="text" name="question" value="{{question.ques_id}}" hidden>{{question.ques}}</input><br>
+            {% for answer in obj|get_filter:question.ques_id %}
+                <input type="radio" name="{{question.ques_id}}" value="{{answer.ans_id}}">{{answer.ans}}</input><br>
+            {% endfor %}
+            </div>
+           <br>
+        {% endfor %}
+    {% endfor %}
+    <button type="submit">Submit</button>
+    </form>
+</div>
+{% endblock %}

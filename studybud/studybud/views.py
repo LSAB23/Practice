@@ -1,6 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .forms import quiz, ques, ques_no_image, ans_text, correct_ans_text, ans_img_text, ans_image, correct_ans_image, correct_ans, ans
 from .models import Quiz, Questions, Answers
+from django.contrib.auth.models import User
 from django.urls import reverse
 from secrets import choice
 from string import hexdigits
@@ -36,7 +37,7 @@ def home(request):
                 if error == 'UNIQUE constraint failed: studybud_quiz.quiz_name':
                     quiz_name = quiz_name + id_gen(3)
                     Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
-        return HttpResponse('Quiz Created you can now add questions')
+        return HttpResponse('Quiz Created you can now add questions') # add hx-swap template
     return render(request, 'home.html', {'quiz_form':quiz_form, 'quizes': quizes})
 
 def add_questions(request, quiz_id):
@@ -51,7 +52,7 @@ def add_questions(request, quiz_id):
     if request.method == 'POST':
         post_info = request.POST
         images = request.FILES
-        anss = post_info.getlist('answer')
+        anss = set(post_info.getlist('answer'))
         anss_with_image = post_info.getlist('answer_with_image')
         correct_anss = post_info.get('correct_answer')
         join_answers = anss + anss_with_image
@@ -61,7 +62,7 @@ def add_questions(request, quiz_id):
             
             if correct_anss in join_answers:
                 ques_id = id_gen()
-                quess = post_info.get('question')
+                quess = str(post_info.get('question'))
                 ques_image = post_info.get('image')
                 quiz_inst = Quiz(quiz_id=quiz_id)
                 ques_inst = Questions(ques_id=ques_id)
@@ -118,7 +119,7 @@ def edit_question(request, ques_id):
         if validate_input(post_info):
             quiz_id = quiz_id=post_info.get('quiz_id')
             # edit quetions
-            ques_edit = str(post_info.get('question'))
+            ques_edit = str(post_info.get('question')).strip()
             ques_edit_image = images.get('image')
             ques_id = post_info.get('ques_id')
             print(quiz_id, ques_id)
@@ -126,10 +127,9 @@ def edit_question(request, ques_id):
             # edit correct answer
             correct_ans_edit = post_info.get('correct_answer')
             correct_ans_id = post_info.get('correct_ans_id')
-            correct_ans_image_edit = images.get('correct_img')
             
             # edit answers
-            ans_edit= post_info.getlist('answer')
+            ans_edit= set(post_info.getlist('answer'))
 
             if correct_ans_edit not in ans_edit:
                 return HttpResponse('Correct answer not in answers')
@@ -163,8 +163,29 @@ def edit_question(request, ques_id):
         'quiz_id':quiz_id,
 
     }
-    return render(request, 'edit_question.html', context=context)
+    return render(request, 'edit_question.html', context)
 
+def practice(request, quiz_id):
+    quiz_filter = Quiz.objects.filter(quiz_id=quiz_id).prefetch_related()
+
+    if request.POST:
+        flip = request.POST.get('flip')
+        test = request.POST.get('test')
+        if test:
+            context = {
+                'quiz': quiz_filter.all(),
+            }
+            return render(request, 'practice_test.html', context)
+        return HttpResponse('hello world')
+    if quiz_filter.exists():
+        context = {
+            'quiz_id':quiz_id,
+        }
+        return render(request, 'practice.html', context)
+    return redirect('/')
+
+def check_answer(request):
+    pass
 
 def get_form(request, what_form):
     forms = {

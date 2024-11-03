@@ -9,10 +9,10 @@ HOME
         {% for quiz in quizes %}
         <div id="h{{quiz.quiz_id}}">
             {{quiz.quiz_name}}
+            <button type="button"> <a href="{% url 'practice' quiz_id=quiz.quiz_id%}">Practice/Learn Quiz</a></button>
             <button type="button"> <a href="{% url 'add_questions' quiz_id=quiz.quiz_id%}">Edit Questions</a></button>
             <button type="button" hx-get="{% url 'delete' type='quiz' id=quiz.quiz_id%}" hx-target="#h{{quiz.quiz_id}}">Delete</button>
-
-        </div>            
+        </div><br>       
         {%  endfor %}
     </div>
     <form hx-post="{% url 'home' %}" hx-trigger="submit">
