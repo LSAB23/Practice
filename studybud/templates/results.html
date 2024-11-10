@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Result
+{% endblock %}
+
+{% block body %}
+{% for template in lst_template %}
+{{forloop.counter}}. {{template}}
+{% endfor %}
+{% endblock %}

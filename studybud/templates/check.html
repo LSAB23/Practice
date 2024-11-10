@@ -1,0 +1,15 @@
+
+
+    {{question}}
+    {% if correct %}
+    <!-- make the color a border -->
+    <p style="color:greenyellow">{{answer}}<p>
+    {% else %}
+    <br>
+    Your Answer:
+    <!-- Change to use images to show wrong and right-->
+    <p style="color:red">{{chosen}}</p>
+    Correct Answer:
+    <p style="color:greenyellow">{{answer}}</p>
+    
+    {% endif %}

@@ -7,6 +7,8 @@ from secrets import choice
 from string import hexdigits
 from .deleteimg import delete_image
 from itertools import zip_longest
+from django.db import connection
+from django.template.loader import render_to_string
 
 def id_gen(number=7):
     id = ''
@@ -52,7 +54,7 @@ def add_questions(request, quiz_id):
     if request.method == 'POST':
         post_info = request.POST
         images = request.FILES
-        anss = set(post_info.getlist('answer'))
+        anss = post_info.getlist('answer')
         anss_with_image = post_info.getlist('answer_with_image')
         correct_anss = post_info.get('correct_answer')
         join_answers = anss + anss_with_image
@@ -60,7 +62,7 @@ def add_questions(request, quiz_id):
         # validate the forms before it start to create the question and answers
         if validate_input(post_info):
             
-            if correct_anss in join_answers:
+            if correct_anss not in join_answers:
                 ques_id = id_gen()
                 quess = str(post_info.get('question'))
                 ques_image = post_info.get('image')
@@ -95,7 +97,7 @@ def add_questions(request, quiz_id):
 
                 return render(request, 'question.html', {'ques_id':ques_id, 'quess':quess})
             else:
-                return HttpResponse('Correct answer is not in answers')
+                return HttpResponse('Correct answer is in answers')
         else:
             return HttpResponse('Try checking your input and try again or the file size of your image')
     context = {
@@ -129,10 +131,10 @@ def edit_question(request, ques_id):
             correct_ans_id = post_info.get('correct_ans_id')
             
             # edit answers
-            ans_edit= set(post_info.getlist('answer'))
+            ans_edit= post_info.getlist('answer')
 
-            if correct_ans_edit not in ans_edit:
-                return HttpResponse('Correct answer not in answers')
+            if correct_ans_edit in ans_edit:
+                return HttpResponse('Correct answer is in answers')
             if ques_edit_image:
                 Questions.objects.filter(ques_id=ques_id).update(ques=ques_edit, ques_image=ques_edit_image)
 
@@ -185,7 +187,42 @@ def practice(request, quiz_id):
     return redirect('/')
 
 def check_answer(request):
-    pass
+    post_info = request.POST
+    lst_template = []
+
+    if post_info:
+        question = post_info.getlist('question')
+        filters = Answers.objects.filter(ques_id__in = question).select_related().all()
+        for ques in question:
+            for answer in filters:
+                if answer.ans_correct:
+                    anss = answer.ans
+                
+                if answer.ques_id.ques_id == ques:
+                    chosen_answer  = post_info.get(ques)
+                    if chosen_answer == answer.ans_id and answer.ans_correct:
+                        context = {
+                        'question':answer.ques_id.ques,
+                        'correct':True,
+                        'answer':anss,
+                    }
+                        template = render_to_string('check.html', context)
+                        lst_template.append(template)
+                    else:
+                        if chosen_answer == answer.ans_id and not answer.ans_correct:
+                            chosen_answer = answer.ans
+                            context = {
+                                'question':answer.ques_id.ques,
+                                'correct':False,
+                                'answer':anss,
+                                'chosen':chosen_answer,
+                            }
+                            template = render_to_string('check.html', context)
+                            lst_template.append(template)
+        print(len(connection.queries), 'end')
+            
+        return render(request, 'results.html', {'lst_template':lst_template})
+    return redirect(home)
 
 def get_form(request, what_form):
     forms = {

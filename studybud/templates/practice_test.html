@@ -15,7 +15,7 @@ Practice
                 {{forloop.counter}}.
                 <input type="text" name="question" value="{{question.ques_id}}" hidden>{{question.ques}}</input><br>
             {% for answer in obj|get_filter:question.ques_id %}
-                <input type="radio" name="{{question.ques_id}}" value="{{answer.ans_id}}">{{answer.ans}}</input><br>
+                <input type="radio" name="{{question.ques_id}}" value="{{answer.ans_id}}" id="h{{answer.ans_id}}"><label for="h{{answer.ans_id}}">{{answer.ans}}</label><br>
             {% endfor %}
             </div>
            <br>
