@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load template %}
+{% block title %}
+Report
+{% endblock %}
+
+{% block body %}
+
+<script>
+function replace(id) {
+    document.getElementById('display').innerHTML = document.getElementById(id).innerHTML
+}
+</script>
+
+
+Atempts: {{reports|length}}
+{% for attempt in reports %}
+<div>
+    Attempt {{forloop.counter}}<br>
+    Score : {{attempt.score}}
+    <button type="submit" value="h{{forloop.counter}}" onclick="replace('h{{forloop.counter}}')">Show Results</button>
+    {% for report in reports %}
+    <div id="h{{forloop.counter}}" hidden>
+    <h3>Attempt {{ forloop.counter }}</h3>
+    {{report|check_html}}
+        <br>
+        <br>
+    </div>
+        {% endfor %}
+</div>
+{% endfor %}
+
+
+<div id="display">
+
+</div>
+
+{% endblock %}

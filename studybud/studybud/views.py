@@ -1,6 +1,7 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, HttpResponse, redirect
 from .forms import quiz, ques, ques_no_image, ans_text, correct_ans_text, ans_img_text, ans_image, correct_ans_image, correct_ans, ans
-from .models import Quiz, Questions, Answers
+from .models import Quiz, Questions, Answers, Report
 from django.contrib.auth.models import User
 from django.urls import reverse
 from secrets import choice
@@ -9,6 +10,7 @@ from .deleteimg import delete_image
 from itertools import zip_longest
 from django.db import connection
 from django.template.loader import render_to_string
+from functools import wraps
 
 def id_gen(number=7):
     id = ''
@@ -18,17 +20,32 @@ def id_gen(number=7):
 def validate_input(post_info):
     return  ques_no_image(post_info).is_valid() and ans_text(post_info).is_valid() and correct_ans_text(post_info).is_valid() or ques(post_info).is_valid() or ans(post_info).is_valid() or correct_ans(post_info).is_valid() or ans_img_text(post_info) or correct_ans_image(post_info).is_valid() or ans_image(post_info).is_valid()
 
+def login_required(func):
+    @wraps(func)
+    def is_auth(request,**kwargs):
+        user = request.user
+        if user.is_authenticated:
+            return func(request,user, kwargs)
+        else:
+            return redirect(home)
+    return is_auth
 
-def home(request):
+
+
+@login_required
+def home(request,  user,*args):
+    # if user:
+    #     return HttpResponse(f'hello world{user}')
 
     quiz_form  = quiz()
-    quizes = Quiz.objects.all()
+    quizzes = Quiz.objects.filter(user=user).all()
+    print(quizzes, 'quizzes')
+
     if request.method == 'POST':
         valid = quiz(request.POST).is_valid()
         if valid:
             quiz_id = id_gen()
             quiz_name = request.POST['quiz_name']
-            user = request.user
             try:
                 Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
             except Exception as e:
@@ -40,10 +57,13 @@ def home(request):
                     quiz_name = quiz_name + id_gen(3)
                     Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
         return HttpResponse('Quiz Created you can now add questions') # add hx-swap template
-    return render(request, 'home.html', {'quiz_form':quiz_form, 'quizes': quizes})
+    return render(request, 'home.html', {'quiz_form':quiz_form, 'quizes': quizzes})
 
-def add_questions(request, quiz_id):
-    check_exist = Quiz.objects.filter(quiz_id=quiz_id).exists()
+@login_required
+def add_questions(request, user,*args):
+    quiz_id = args[0].get('quiz_id')
+    check_exist = Quiz.objects.filter(quiz_id=quiz_id,user=user).exists()
+    print(check_exist)
     if not check_exist:
         return HttpResponse(f'You have to create a test first at <a href="{request.build_absolute_uri(reverse('home'))}">This Link</a>')
     
@@ -51,6 +71,7 @@ def add_questions(request, quiz_id):
     answer = ans_text()
     correct_answer = correct_ans_text()
     questions = Questions.objects.filter(quiz_id=quiz_id).all()
+    
     if request.method == 'POST':
         post_info = request.POST
         images = request.FILES
@@ -111,8 +132,10 @@ def add_questions(request, quiz_id):
 
 
 
-
-def edit_question(request, ques_id):
+@login_required
+def edit_question(request, user,*args):
+    ques_id = args[0].get('ques_id')
+    
     ques_query = Questions.objects.select_related().filter(ques_id=ques_id)
     
     if request.method == 'POST':
@@ -154,7 +177,7 @@ def edit_question(request, ques_id):
                 Answers.objects.filter(ans_id=id).update(ans=correct_ans_edit)
             
             return HttpResponse('Update Done')
-        return HttpResponse('it works')
+        return HttpResponse('it works edit question')
     if not ques_query:
         return redirect('/')
     quiz_id = ques_query.values()[0].get('quiz_id_id')
@@ -167,8 +190,10 @@ def edit_question(request, ques_id):
     }
     return render(request, 'edit_question.html', context)
 
-def practice(request, quiz_id):
-    quiz_filter = Quiz.objects.filter(quiz_id=quiz_id).prefetch_related()
+@login_required
+def practice(request, user,*args):
+    quiz_id = args[0].get('quiz_id')
+    quiz_filter = Quiz.objects.filter(quiz_id=quiz_id, user=user).prefetch_related()
 
     if request.POST:
         flip = request.POST.get('flip')
@@ -178,6 +203,7 @@ def practice(request, quiz_id):
                 'quiz': quiz_filter.all(),
             }
             return render(request, 'practice_test.html', context)
+        
         return HttpResponse('hello world')
     if quiz_filter.exists():
         context = {
@@ -186,10 +212,15 @@ def practice(request, quiz_id):
         return render(request, 'practice.html', context)
     return redirect('/')
 
-def check_answer(request):
+@login_required
+def check_answer(request, user,*args):
     post_info = request.POST
     lst_template = []
-
+    correct = []
+    correct_len = 0
+    wrong = []
+    wrong_len = 0
+    anss = ''
     if post_info:
         question = post_info.getlist('question')
         filters = Answers.objects.filter(ques_id__in = question).select_related().all()
@@ -197,6 +228,7 @@ def check_answer(request):
             for answer in filters:
                 if answer.ans_correct:
                     anss = answer.ans
+                    quiz_id=answer.quiz_id
                 
                 if answer.ques_id.ques_id == ques:
                     chosen_answer  = post_info.get(ques)
@@ -206,6 +238,8 @@ def check_answer(request):
                         'correct':True,
                         'answer':anss,
                     }
+                        correct.append(context)
+                        correct_len +=1
                         template = render_to_string('check.html', context)
                         lst_template.append(template)
                     else:
@@ -217,14 +251,37 @@ def check_answer(request):
                                 'answer':anss,
                                 'chosen':chosen_answer,
                             }
+                            wrong.append(context)
+                            wrong_len+=1
                             template = render_to_string('check.html', context)
                             lst_template.append(template)
-        print(len(connection.queries), 'end')
+        score = f'{correct_len}/{correct_len+wrong_len}'
+        Report(user=user,quiz_id=quiz_id,score=score,wrong=wrong, correct=correct, correct_len=correct_len, wrong_len=wrong_len).save()
             
-        return render(request, 'results.html', {'lst_template':lst_template})
+        return render(request, 'results.html', {'lst_template':lst_template, 'correct_ans':correct_len, 'total':correct_len+wrong_len})
     return redirect(home)
 
-def get_form(request, what_form):
+
+
+@login_required
+def report(request, user,*args):
+    quiz_id = args[0].get('quiz_id')
+    get_report = Report.objects.filter(quiz_id=quiz_id, user=request.user).select_related()
+
+    if get_report:
+        return render(request, 'report.html', {'reports':get_report})
+        
+        # return HttpResponse(_ for _ in attempts)
+    return HttpResponse('No Reports')
+
+
+
+@login_required
+def get_form(request, user,*args):
+    what_form = args[0].get('what_form')
+
+    # what_form = kwargs.get('what_form')
+    print(what_form, 'what form')
     forms = {
         'ques':ques(),
         'text_ans':ans_text(),
@@ -237,15 +294,18 @@ def get_form(request, what_form):
         return HttpResponse(f'{get_form}')
     return HttpResponse('Form do not exist')
 
-def delete(request, type, id):
-    type = type.lower()
+@login_required
+def delete(request, user,*args):
+    type = str(args[0].get('type')).lower()
+    id = args[0].get('id')
+
     if type == 'quiz':
-        Quiz.objects.filter(quiz_id=id).delete()
+        Quiz.objects.filter(quiz_id=id, user=user).delete()
         return HttpResponse('Quiz Deleted')
     if type == 'question':
-        Questions.objects.filter(ques_id=id).delete()
+        Questions.objects.filter(ques_id=id, user=user).delete()
         return HttpResponse('Question Deleted')
     if type == 'answer':
-        Answers.objects.filter(ans_id=id).delete()
+        Answers.objects.filter(ans_id=id, user=user).delete()
         return HttpResponse('Answer Deleted')
     return 

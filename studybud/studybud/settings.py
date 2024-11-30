@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'studybud'
+    'simple'
 ]
 
 MIDDLEWARE = [
@@ -40,7 +41,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'studybud.urls'
-AUTH_USER_MODELS = 'studybud.models.Users'
+AUTH_USER_MODELS = 'simple.UserModels'
 
 TEMPLATES = [
     {

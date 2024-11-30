@@ -5,7 +5,13 @@ Result
 {% endblock %}
 
 {% block body %}
+{% if correct_ans%}
+    <p>{{correct_ans}}/{{total}}</p>
+{% endif %}
 {% for template in lst_template %}
+
 {{forloop.counter}}. {{template}}
+
 {% endfor %}
+
 {% endblock %}

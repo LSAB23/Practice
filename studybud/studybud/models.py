@@ -1,12 +1,11 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, User
+from django.contrib.auth.models import User
 
 
-class Users(AbstractBaseUser):
-    email = models.EmailField(unique=True, max_length=255)
+
 
 class Quiz(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1) # type: ignore
     quiz_id = models.CharField(unique=True, primary_key=True,max_length=7, editable=False)
     quiz_name = models.CharField(max_length=255, unique=True)
     date_created = models.DateField(auto_now_add=True, editable=False)
@@ -25,3 +24,13 @@ class Answers(models.Model):
     ans = models.CharField(max_length=1000)
     ans_image = models.ImageField(default=None, upload_to='uploads/answer_images')
     ans_correct = models.BooleanField(default=False)
+
+class Report(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    score = models.CharField(max_length=1000000)
+    wrong = models.CharField(max_length=1000000000000000000)
+    correct = models.CharField(max_length=1000000000000000000)
+    wrong_len = models.IntegerField()
+    correct_len = models.IntegerField()
+    time = models.DateTimeField(auto_now_add=True)
