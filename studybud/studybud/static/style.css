@@ -1,0 +1,31 @@
+button{
+    background-color:  rgb(207, 249, 249);
+    border: none;
+    min-width:fit-content;
+    width: 20%;
+    height: 35px;
+    border-radius: 15px;
+    cursor: pointer;    
+}
+
+button:active{
+    background-color: lightblue;
+}
+input{
+    width: 50%;
+    border: none;
+    height: 30px;
+    border-radius: 10px;
+}
+
+label{
+    font-size: medium;
+}
+
+:root{
+    font-size: 1rem;
+    text-align: center;
+    font-family: Helvetica, Arial ,sans-serif;
+    background-color: azure;
+    align-items: center;
+}

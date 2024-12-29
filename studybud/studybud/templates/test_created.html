@@ -1,0 +1,17 @@
+<div id="h{{quiz_id}}" class="quiz_boxes">
+    <h3 name="quiz_name">{{quiz_name}}</h3>
+    
+    {{quiz.quiz_name}}
+    <button type="button" onclick="location.href='{% url 'practice' quiz_id=quiz_id%}'">Practice/Learn Quiz</button>
+    <button type="button" onclick="location.href='{% url 'add_questions' quiz_id=quiz_id%}'">Add or Edit Questions</button>
+    
+    <button type="button" onclick="location.href='{% url 'report' quiz_id=quiz_id%}'">Get Reports</button>
+    
+    <button type="button" hx-get="{% url 'delete' type='quiz' id=quiz_id%}" hx-target="#h{{quiz_id}}">Delete</button>
+
+
+</div><br>
+
+<script>
+    document.getElementById('id_quiz_name').value = ''
+</script>

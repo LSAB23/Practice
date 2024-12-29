@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static%}
+
+{% block title %}
+HOME
+{% endblock %}
+{% block css %}
+{% static 'homepage.css' %}
+{% endblock %}
+
+{% block body %}
+<h2>Add Test</h2>
+<form hx-post="{% url 'home' %}" hx-trigger="submit" hx-target="#edit_tests" hx-swap="beforeend">
+{% csrf_token %}
+{{quiz_form}}
+<br>
+<button type="submit">Submit</button>
+</form>
+    <h3>Current Tests</h3>
+    <div id="edit_tests">
+        {% for quiz in quizes %}
+        <div id="h{{quiz.quiz_id}}" class="quiz_boxes">
+            <h3 name="quiz_name">{{quiz.quiz_name}}</h3><br>
+            <div class="options">
+            <button type="button" onclick="location.href='{% url 'practice' quiz_id=quiz.quiz_id%}'">Practice/Learn Quiz</button>
+            <button type="button" onclick="location.href='{% url 'add_questions' quiz_id=quiz.quiz_id%}'">Add or Edit Questions</button>
+            
+            <button type="button" onclick="location.href='{% url 'report' quiz_id=quiz.quiz_id%}'">Get Reports</button>
+            
+            <button type="button" hx-get="{% url 'delete' type='quiz' id=quiz.quiz_id%}" hx-target="#h{{quiz.quiz_id}}">Delete</button>
+            </div>
+        </div><br>
+        
+        {%  endfor %}
+    </div>
+{% endblock %}

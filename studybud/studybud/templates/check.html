@@ -1,0 +1,25 @@
+{{question}}
+
+{% if correct %}
+<!-- make the color a border -->
+
+<p>
+    You're Right:
+    <span class="correct_answer">{{answer}}</span>
+</p>
+{% else %}
+<br>
+
+<!-- Change to use images to show wrong and right-->
+<p>
+    Your Answer:
+    <span class="wrong_answer">{{chosen}}</span>
+</p>
+
+
+<p>
+    Correct Answer:
+    <span class="correct_answer">{{answer}}</span>
+</p>
+
+{% endif %}

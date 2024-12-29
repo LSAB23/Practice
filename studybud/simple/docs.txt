@@ -20,6 +20,8 @@ TEMPLATES = [
 
 AUTH_USER_MODEL = 'simple.UserModels'
 
+Static
+Make sure you have a Static url for the css to work
 
 Optional
 # defauls is home

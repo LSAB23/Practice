@@ -1,0 +1,27 @@
+#edit_tests{
+    display: inline-flex;
+    align-content: center;
+    flex-wrap: wrap;
+}
+h3{
+    text-align: center;
+}
+.quiz_boxes{
+    border: solid,;
+    border-width: 10px;
+    border-color: rgb(207, 249, 249);
+    align-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px;
+    flex-grow: 2;
+    width: 25%;
+}
+.options{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+}
+

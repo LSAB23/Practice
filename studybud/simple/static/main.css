@@ -9,14 +9,12 @@
     color: red;
 }
 input{
-    border-radius: 20px;
-    width: 100%;
-    border: none;
+    border-radius: 15px;
+    border: 0.5px;
 }
 
 button{
     border-radius: 20px;
-    width: 50%;
     background-color: lightgreen;
     color: white;
     padding: 10px 20px;
@@ -30,4 +28,5 @@ button:active{
 form{
     margin-top: 20%;
     line-height: 180%;
+    width: 100%;
 }

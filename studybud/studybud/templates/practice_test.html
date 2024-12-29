@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load template%}
+
+
+{% block title %}
+Practice
+{% endblock %}
+
+
+
+{% block body %}
+<div>
+    <form hx-post="{% url 'check' %}">
+        {% csrf_token %}
+    {% for obj in quiz %}
+        {% if obj.questions_set.all%}
+            
+            {% for question in obj.questions_set.all %}
+                <div class="ques_and_ans_box">
+                    {{forloop.counter}}.
+                    <input type="text" name="question" value="{{question.ques_id}}" hidden>{{question.ques}}</input></br></br>
+                    
+                    {% if question.ques_image %}
+                    <img src="/{{question.ques_image }}" alt="Question Image" width="200px" height="200px" defer>
+                    <br>
+                    <br>
+                    {% endif %}
+                    <div class="ans">
+                {% for answer in obj|get_filter:question.ques_id %}
+                    <div>
+                    <input type="radio" name="{{question.ques_id}}" value="{{answer.ans_id}}" id="h{{answer.ans_id}}">
+                    <label for="h{{answer.ans_id}}">{{answer.ans}}</label>
+                    </div>
+                {% endfor %}
+                </div>
+                </div>
+
+        </br>
+            {% endfor %}
+            <button type="submit">Submit</button>
+        {% else %}
+            <button type="button"> <a href="{% url 'add_questions' quiz_id=obj.quiz_id%}">Add or Edit Questions</a></button>
+            <p>No Questions add questions at {% url 'home' %}</p>
+        {% endif %}
+
+    {% endfor %}
+    </form>
+</div>
+{% endblock %}

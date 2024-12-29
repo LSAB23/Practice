@@ -1,17 +1,22 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}
 Result
 {% endblock %}
 
+{% block css %} {% static 'check.css' %}{% endblock %}
+
+
 {% block body %}
 {% if correct_ans%}
-    <p>{{correct_ans}}/{{total}}</p>
+    <p>Score : {{correct_ans}}/{{total}}</p>
 {% endif %}
-{% for template in lst_template %}
+<div id="content">
 
+{% for template in lst_template %}
 {{forloop.counter}}. {{template}}
 
 {% endfor %}
+</div>
 
 {% endblock %}

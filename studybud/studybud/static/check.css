@@ -1,0 +1,37 @@
+:root{
+    font-size: 1rem;
+    text-align: center;
+    font-family: Helvetica, Arial ,sans-serif;
+    background-color: azure;
+    /* align-items: center; */
+}
+#content{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    align-items: flex-start;
+    flex-direction: column;
+}
+.correct_answer{
+    display: block;
+    border: solid;
+    border-color: rgb(175, 229, 94);
+    background-color: rgb(175, 229, 94);
+    width: 100%;
+    padding: 15px;
+}
+.wrong_answer{
+    display: block;
+    border: solid;
+    border-color: rgb(240, 69, 69);
+    background-color: rgb(240, 69, 69);
+    color: white;
+    width: 100%;
+    padding: 20px;
+}
+p{
+    margin: 0px;
+    padding: 10px;
+    width: 90%;
+    text-align: left;
+}

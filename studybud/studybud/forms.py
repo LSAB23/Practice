@@ -5,7 +5,7 @@ class quiz(forms.Form):
     quiz_name = forms.CharField(label='Name of Test: ', widget=forms.TextInput(attrs={'placeholder': 'Enter the name you want the quiz to have ..'}))
 
 class ques(forms.Form):
-    question = forms.CharField(label='Question :', widget=forms.Textarea(attrs={'rows':'2', 'placeholder':'hello'}))
+    question = forms.CharField(label='Question :', widget=forms.Textarea(attrs={'rows':'4', 'placeholder':'  Add a question here '}))
     ques_image = forms.ImageField(label='Add image')
 
 class ques_no_image(ques):

@@ -1,45 +1,33 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, HttpResponse, redirect
+from simple.models import UserModels
 from .forms import quiz, ques, ques_no_image, ans_text, correct_ans_text, ans_img_text, ans_image, correct_ans_image, correct_ans, ans
 from .models import Quiz, Questions, Answers, Report
 from django.contrib.auth.models import User
 from django.urls import reverse
-from secrets import choice
-from string import hexdigits
 from .deleteimg import delete_image
 from itertools import zip_longest
 from django.db import connection
 from django.template.loader import render_to_string
-from functools import wraps
+from django.db import IntegrityError
+from simple.views import login_required, generate_username
+
 
 def id_gen(number=7):
-    id = ''
-    for len in range(number):
-        id += choice(hexdigits)
+    id = generate_username(number)
     return id
+
 def validate_input(post_info):
     return  ques_no_image(post_info).is_valid() and ans_text(post_info).is_valid() and correct_ans_text(post_info).is_valid() or ques(post_info).is_valid() or ans(post_info).is_valid() or correct_ans(post_info).is_valid() or ans_img_text(post_info) or correct_ans_image(post_info).is_valid() or ans_image(post_info).is_valid()
-
-def login_required(func):
-    @wraps(func)
-    def is_auth(request,**kwargs):
-        user = request.user
-        if user.is_authenticated:
-            return func(request,user, kwargs)
-        else:
-            return redirect(home)
-    return is_auth
 
 
 
 @login_required
-def home(request,  user,*args):
-    # if user:
-    #     return HttpResponse(f'hello world{user}')
+def home(request,  user=None,*args):
 
     quiz_form  = quiz()
     quizzes = Quiz.objects.filter(user=user).all()
-    print(quizzes, 'quizzes')
+    
 
     if request.method == 'POST':
         valid = quiz(request.POST).is_valid()
@@ -47,23 +35,31 @@ def home(request,  user,*args):
             quiz_id = id_gen()
             quiz_name = request.POST['quiz_name']
             try:
+                
                 Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
+                
+                return render(request, 'test_created.html', {'quiz_name':quiz_name,'quiz_id':quiz_id})
             except Exception as e:
-                error = repr(e)
+                error = e.args[0]
                 if error ==  'UNIQUE constraint failed: studybud_quiz.quiz_id':
                     quiz_id = id_gen()
                     Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
+                    return render(request, 'test_created.html', {'quiz_name':quiz_name,'quiz_id':quiz_id})
+
                 if error == 'UNIQUE constraint failed: studybud_quiz.quiz_name':
                     quiz_name = quiz_name + id_gen(3)
+                    print(quiz_name)
                     Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
-        return HttpResponse('Quiz Created you can now add questions') # add hx-swap template
+                    return render(request, 'test_created.html', {'quiz_name':quiz_name,'quiz_id':quiz_id})
+                print(error, 'except')
+            return 
     return render(request, 'home.html', {'quiz_form':quiz_form, 'quizes': quizzes})
 
 @login_required
-def add_questions(request, user,*args):
-    quiz_id = args[0].get('quiz_id')
+def add_questions(request, user=None,*args, **kwargs):
+    quiz_id = kwargs.get('quiz_id')
     check_exist = Quiz.objects.filter(quiz_id=quiz_id,user=user).exists()
-    print(check_exist)
+    
     if not check_exist:
         return HttpResponse(f'You have to create a test first at <a href="{request.build_absolute_uri(reverse('home'))}">This Link</a>')
     
@@ -86,7 +82,7 @@ def add_questions(request, user,*args):
             if correct_anss not in join_answers:
                 ques_id = id_gen()
                 quess = str(post_info.get('question'))
-                ques_image = post_info.get('image')
+                ques_image = images.get('ques_image')
                 quiz_inst = Quiz(quiz_id=quiz_id)
                 ques_inst = Questions(ques_id=ques_id)
                 
@@ -133,8 +129,8 @@ def add_questions(request, user,*args):
 
 
 @login_required
-def edit_question(request, user,*args):
-    ques_id = args[0].get('ques_id')
+def edit_question(request, user=None,*args, **kwargs):
+    ques_id = kwargs.get('ques_id')
     
     ques_query = Questions.objects.select_related().filter(ques_id=ques_id)
     
@@ -147,7 +143,6 @@ def edit_question(request, user,*args):
             ques_edit = str(post_info.get('question')).strip()
             ques_edit_image = images.get('image')
             ques_id = post_info.get('ques_id')
-            print(quiz_id, ques_id)
 
             # edit correct answer
             correct_ans_edit = post_info.get('correct_answer')
@@ -177,7 +172,7 @@ def edit_question(request, user,*args):
                 Answers.objects.filter(ans_id=id).update(ans=correct_ans_edit)
             
             return HttpResponse('Update Done')
-        return HttpResponse('it works edit question')
+        return HttpResponse('Error check your inputs')
     if not ques_query:
         return redirect('/')
     quiz_id = ques_query.values()[0].get('quiz_id_id')
@@ -191,8 +186,8 @@ def edit_question(request, user,*args):
     return render(request, 'edit_question.html', context)
 
 @login_required
-def practice(request, user,*args):
-    quiz_id = args[0].get('quiz_id')
+def practice(request, user=None,*args, **kwargs):
+    quiz_id = kwargs.get('quiz_id')
     quiz_filter = Quiz.objects.filter(quiz_id=quiz_id, user=user).prefetch_related()
 
     if request.POST:
@@ -213,7 +208,7 @@ def practice(request, user,*args):
     return redirect('/')
 
 @login_required
-def check_answer(request, user,*args):
+def check_answer(request, user=None,*args):
     post_info = request.POST
     lst_template = []
     correct = []
@@ -264,8 +259,9 @@ def check_answer(request, user,*args):
 
 
 @login_required
-def report(request, user,*args):
-    quiz_id = args[0].get('quiz_id')
+def report(request, user=None,*args, **kwargs):
+    print(kwargs)
+    quiz_id = kwargs.get('quiz_id')
     get_report = Report.objects.filter(quiz_id=quiz_id, user=request.user).select_related()
 
     if get_report:
@@ -277,8 +273,8 @@ def report(request, user,*args):
 
 
 @login_required
-def get_form(request, user,*args):
-    what_form = args[0].get('what_form')
+def get_form(request, user=None,*args, **kwargs):
+    what_form = kwargs.get('what_form')
 
     # what_form = kwargs.get('what_form')
     print(what_form, 'what form')
@@ -289,23 +285,23 @@ def get_form(request, user,*args):
         'correct_ans_img_only': correct_ans_image(),
         'correct_ans': correct_ans(),
     }
-    get_form = forms.get(what_form)
+    get_form = forms.get(what_form) # type: ignore
     if get_form:
         return HttpResponse(f'{get_form}')
     return HttpResponse('Form do not exist')
 
 @login_required
-def delete(request, user,*args):
-    type = str(args[0].get('type')).lower()
-    id = args[0].get('id')
+def delete(request, user,*args, **kwargs):
+    type = str(kwargs.get('type')).lower()
+    id = kwargs.get('id')
 
     if type == 'quiz':
         Quiz.objects.filter(quiz_id=id, user=user).delete()
         return HttpResponse('Quiz Deleted')
     if type == 'question':
-        Questions.objects.filter(ques_id=id, user=user).delete()
+        Questions.objects.filter(ques_id=id).delete()
         return HttpResponse('Question Deleted')
     if type == 'answer':
-        Answers.objects.filter(ans_id=id, user=user).delete()
+        Answers.objects.filter(ans_id=id).delete()
         return HttpResponse('Answer Deleted')
     return 

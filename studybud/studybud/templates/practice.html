@@ -1,22 +1,26 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 Practice
 {% endblock %}
-
+{% block second_css %} {% static 'check.css' %}{% endblock %}
+{% block css %}{% static 'practice.css' %}{% endblock %}
 {% block body %}
+
+<div class="choose">
 <form hx-post="{% url 'practice' quiz_id=quiz_id%}" hx-target="#contents" hx-trigger="submit">
     {% csrf_token %}
     <input type="text" name="flip" value="Flip" hidden>
 <button type="submit">Flip</button>
 </form>
-
+<br>
 <form hx-post="{% url 'practice' quiz_id=quiz_id%}" hx-target="#contents" hx-trigger="submit">
     {% csrf_token %}
     <input type="text" name="test" value="test" hidden>
 <button type="submit">Test form</button>
 </form>
-<br>
+</div>
 <br>
 <br>
 <div id="contents">

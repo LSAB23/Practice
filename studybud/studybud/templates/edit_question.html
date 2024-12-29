@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}
 Edit Question
 {% endblock %}
+
+{% block css %} {% static 'add_ques.css' %}{% endblock %}
+
 
 {% block body %}
 <h1>Edit Question & Answers </h1>
@@ -57,6 +61,6 @@ Edit Question
 <button type="submit">Submit</button>
 
 <div>
-    <button hx-get="{% url 'get-form' what_form='text_ans'%}" hx-target="#answer" hx-swap="afterend">Add Another Answer Feild</button>
+    <button hx-get="{% url 'get-form' what_form='text_ans'%}" hx-target="#answer" hx-swap="beforeend">Add Another Answer Feild</button>
 </div>
 {% endblock %}

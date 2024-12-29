@@ -1,0 +1,50 @@
+:root{
+    font-size: 1.2rem;
+}
+input{
+    width: 15px;
+    border: none;
+    height: 15px;
+    cursor: pointer;
+}
+.choose{
+    display: flex;
+    justify-content: center;
+    justify-items: center;
+    flex-wrap: wrap;
+    flex-direction: column
+}
+#contents{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px;
+    align-content: center;
+}
+
+div.ques_and_ans_box{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    text-align: left;
+    padding: 10px;
+    padding-left: 20px;
+    width: 90%;
+
+}
+div.ans{
+    display: flex;
+    min-width: fit-content;
+    width: 100%;
+    gap: 15px;
+    flex-direction: column;
+    flex-wrap: wrap
+}
+div.radio{
+    padding: none;
+}
+label{
+    font-size: large;
+    width: 100%;
+    min-width: fit-content;
+    cursor: pointer;
+}

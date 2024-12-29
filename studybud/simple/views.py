@@ -16,7 +16,6 @@ def login_required(func):
     @wraps(func)
     def login_verification(request, *args, **kwargs):
         user = request.user
-        print(user.is_authenticated)
         if user.is_authenticated:
             return func(request,user=user,*args, **kwargs)
         else:
@@ -38,8 +37,8 @@ def signup(request):
             return HttpResponse(validate.errors.as_ul())
         
         password = make_password((post_info.get('password')))
-
-        UserModels.objects.create(id=generate_username(), email=post_info.get('email'), name=post_info.get('name'), password=password)
+        user_id = generate_username()
+        UserModels.objects.create(id=user_id, username=user_id,email=post_info.get('email'), name=post_info.get('name'), password=password)
         return HttpResponse('Account Created, You can now login at ...')
     return render(request, 'signup.html', {'form': signup_form })
 
