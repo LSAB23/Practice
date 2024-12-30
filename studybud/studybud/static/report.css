@@ -1,0 +1,10 @@
+.attempt{
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 20%;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    align-items: center;
+    gap: 15px;
+}

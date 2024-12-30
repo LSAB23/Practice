@@ -1,0 +1,9 @@
+
+<nav>
+    <ul><a href="{% url 'home' %}"> HOME </a></ul>
+    {% if can_practice %}
+    <ul><a href="{% url 'practice' quiz_id=quiz_id%}"> Practice Test </a> </ul>
+    {% endif %}
+    <ul> ABOUT </ul>
+    <ul> CONTACT </ul>
+</nav>

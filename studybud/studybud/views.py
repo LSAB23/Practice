@@ -59,7 +59,7 @@ def home(request,  user=None,*args):
 def add_questions(request, user=None,*args, **kwargs):
     quiz_id = kwargs.get('quiz_id')
     check_exist = Quiz.objects.filter(quiz_id=quiz_id,user=user).exists()
-    
+
     if not check_exist:
         return HttpResponse(f'You have to create a test first at <a href="{request.build_absolute_uri(reverse('home'))}">This Link</a>')
     
@@ -123,6 +123,8 @@ def add_questions(request, user=None,*args, **kwargs):
         'answer': answer,
         'correct': correct_answer,
         'questions': questions,
+        'can_practice': True,
+        'quiz_id': quiz_id,
     }
     return render(request, 'add_ques.html', context)
 
@@ -133,12 +135,12 @@ def edit_question(request, user=None,*args, **kwargs):
     ques_id = kwargs.get('ques_id')
     
     ques_query = Questions.objects.select_related().filter(ques_id=ques_id)
-    
+    quizid = ques_query[0].quiz_id.quiz_id
     if request.method == 'POST':
         post_info = request.POST
         images = request.FILES
         if validate_input(post_info):
-            quiz_id = quiz_id=post_info.get('quiz_id')
+            quiz_id=post_info.get('quiz_id')
             # edit quetions
             ques_edit = str(post_info.get('question')).strip()
             ques_edit_image = images.get('image')
@@ -181,6 +183,8 @@ def edit_question(request, user=None,*args, **kwargs):
         'ques':ques_query,
         'id':ques_id,
         'quiz_id':quiz_id,
+        'can_practice': True,
+        'quiz_id': quizid,
 
     }
     return render(request, 'edit_question.html', context)
@@ -199,7 +203,7 @@ def practice(request, user=None,*args, **kwargs):
             }
             return render(request, 'practice_test.html', context)
         
-        return HttpResponse('hello world')
+        return HttpResponse('Feature Not yet implemeted')
     if quiz_filter.exists():
         context = {
             'quiz_id':quiz_id,

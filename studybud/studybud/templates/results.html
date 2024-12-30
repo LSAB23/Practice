@@ -1,13 +1,11 @@
-{% extends 'base.html' %}
 {% load static %}
-{% block title %}
+<title>
 Result
-{% endblock %}
+</title>
 
-{% block css %} {% static 'check.css' %}{% endblock %}
+<link rel="stylesheet" href="{% static 'check.css' %}">
 
-
-{% block body %}
+<body>
 {% if correct_ans%}
     <p>Score : {{correct_ans}}/{{total}}</p>
 {% endif %}
@@ -19,4 +17,5 @@ Result
 {% endfor %}
 </div>
 
-{% endblock %}
+
+</body>

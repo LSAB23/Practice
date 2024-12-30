@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
 {% load template %}
+{% load static %}
 {% block title %}
 Report
 {% endblock %}
 
 
+{% block css %}{% static 'report.css' %}{% endblock %}
 
 {% block body %}
-
 <script>
 function replace(id) {
     document.getElementById('display').innerHTML = document.getElementById(id).innerHTML
@@ -16,8 +17,8 @@ function replace(id) {
 
 
 Atempts: {{reports|length}}
+<div class="attempt">
 {% for attempt in reports %}
-<div>
     Attempt {{forloop.counter}}<br>
     Score : {{attempt.score}}
     <button type="submit" value="h{{forloop.counter}}" onclick="replace('h{{forloop.counter}}')">Show Results</button>
@@ -29,8 +30,8 @@ Atempts: {{reports|length}}
         <br>
     </div>
         {% endfor %}
-</div>
-{% endfor %}
+    {% endfor %}
+</div> 
 
 
 <div id="display">

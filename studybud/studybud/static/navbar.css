@@ -1,0 +1,15 @@
+nav{
+    display: flex;
+    width: 100%;
+    background-color: azure;
+    text-align: right;
+    height: 50px;
+    align-content: center;
+    flex-wrap: wrap;
+    flex-direction: column
+}
+a{
+    text-decoration: none;
+    padding: 10px;
+    
+}

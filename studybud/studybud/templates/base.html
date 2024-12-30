@@ -12,7 +12,9 @@
         {% block title %}
         {% endblock %}
     </title>
+    {% include 'navbar.html' %}
     <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'navbar.css' %}">
     <link rel="stylesheet" href="{% block css %}{% endblock %}">
     <link rel="stylesheet" href="{% block second_css %}{% endblock %}">
 </head>

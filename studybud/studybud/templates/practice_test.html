@@ -1,14 +1,12 @@
-{% extends 'base.html' %}
 {% load template%}
 
 
-{% block title %}
-Practice
-{% endblock %}
+<title> Practice </title>
 
 
 
-{% block body %}
+
+<body>
 <div>
     <form hx-post="{% url 'check' %}">
         {% csrf_token %}
@@ -27,10 +25,18 @@ Practice
                     {% endif %}
                     <div class="ans">
                 {% for answer in obj|get_filter:question.ques_id %}
+                    {% if answer.ans_image %}
+                        <div>
+                        <input type="radio" name="{{question.ques_id}}" value="{{answer.ans_id}}" id="h{{answer.ans_id}}">
+                        <img src="/{{answer.ans_image}}" alt="answer image" width="150px" height="150px" defer>
+                        <label for="h{{answer.ans_id}}">{{answer.ans}}</label>
+                        </div>
+                    {% else %}
                     <div>
-                    <input type="radio" name="{{question.ques_id}}" value="{{answer.ans_id}}" id="h{{answer.ans_id}}">
-                    <label for="h{{answer.ans_id}}">{{answer.ans}}</label>
-                    </div>
+                        <input type="radio" name="{{question.ques_id}}" value="{{answer.ans_id}}" id="h{{answer.ans_id}}">
+                        <label for="h{{answer.ans_id}}">{{answer.ans}}</label>
+                        </div>
+                    {% endif %}
                 {% endfor %}
                 </div>
                 </div>
@@ -39,11 +45,10 @@ Practice
             {% endfor %}
             <button type="submit">Submit</button>
         {% else %}
-            <button type="button"> <a href="{% url 'add_questions' quiz_id=obj.quiz_id%}">Add or Edit Questions</a></button>
-            <p>No Questions add questions at {% url 'home' %}</p>
+            <p>No Questions add questions at <button type="button"> <a href="{% url 'add_questions' quiz_id=obj.quiz_id%}">Add or Edit Questions</a></button></p>
         {% endif %}
 
     {% endfor %}
     </form>
 </div>
-{% endblock %}
+</body>
