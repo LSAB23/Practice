@@ -1,15 +1,11 @@
-from django.http import HttpResponseRedirect
 from django.shortcuts import render, HttpResponse, redirect
 from simple.models import UserModels
 from .forms import quiz, ques, ques_no_image, ans_text, correct_ans_text, ans_img_text, ans_image, correct_ans_image, correct_ans, ans
 from .models import Quiz, Questions, Answers, Report
-from django.contrib.auth.models import User
 from django.urls import reverse
 from .deleteimg import delete_image
 from itertools import zip_longest
-from django.db import connection
 from django.template.loader import render_to_string
-from django.db import IntegrityError
 from simple.views import login_required, generate_username
 
 
@@ -48,10 +44,8 @@ def home(request,  user=None,*args):
 
                 if error == 'UNIQUE constraint failed: studybud_quiz.quiz_name':
                     quiz_name = quiz_name + id_gen(3)
-                    print(quiz_name)
                     Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
                     return render(request, 'test_created.html', {'quiz_name':quiz_name,'quiz_id':quiz_id})
-                print(error, 'except')
             return 
     return render(request, 'home.html', {'quiz_form':quiz_form, 'quizes': quizzes})
 
@@ -264,14 +258,13 @@ def check_answer(request, user=None,*args):
 
 @login_required
 def report(request, user=None,*args, **kwargs):
-    print(kwargs)
+
     quiz_id = kwargs.get('quiz_id')
     get_report = Report.objects.filter(quiz_id=quiz_id, user=request.user).select_related()
 
     if get_report:
         return render(request, 'report.html', {'reports':get_report})
-        
-        # return HttpResponse(_ for _ in attempts)
+       
     return HttpResponse('No Reports')
 
 
@@ -280,8 +273,7 @@ def report(request, user=None,*args, **kwargs):
 def get_form(request, user=None,*args, **kwargs):
     what_form = kwargs.get('what_form')
 
-    # what_form = kwargs.get('what_form')
-    print(what_form, 'what form')
+    
     forms = {
         'ques':ques(),
         'text_ans':ans_text(),

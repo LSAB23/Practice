@@ -23,7 +23,7 @@ Add Question
     <div id="answers">
     {{answer}}
     {{answer}}
-    {{answer}} <!-- add remove -->
+    {{answer}}
     </div>
     
     <div id="correct_ans">
@@ -39,8 +39,21 @@ Add Question
         <button hx-get="{% url 'get-form' what_form='text_ans'%}" hx-target="#answers" hx-swap="beforeend">Add Another Answer Feild</button>
         <button hx-get="{% url 'get-form' what_form='ans_with_image'%}" hx-target="#answers" hx-swap="beforeend">Image and text Answer </button>
         <button hx-get="{% url 'get-form' what_form='correct_ans'%}" hx-target="#correct_ans" hx-swap="innerhtml">Replace Text correct with correct Answer with Image and text</button>
-    </div>
 
+        <button type="button" onclick="remove_last()">Remove last question input</button>
+    </div>
+    <script>
+        function remove_last(){
+            var answer_lst = document.getElementById('answers');
+            if (answer_lst.lastChild.nodeName == '#text'){
+            answer_lst.removeChild(answer_lst.lastChild)
+            answer_lst.removeChild(answer_lst.lastChild)
+            }
+            else{
+                answer_lst.removeChild(answer_lst.lastChild)
+            }
+        }
+    </script>
     <h1> Questions </h1>
     (Questions with images will only display the text)
     <div id="questions" hx-swap-oob="true">
