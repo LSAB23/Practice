@@ -62,7 +62,7 @@ def add_questions(request, user=None,*args, **kwargs):
     question = ques_no_image()
     answer = ans_text()
     correct_answer = correct_ans_text()
-    questions = Questions.objects.filter(quiz_id=quiz_id).all()
+    questions = Questions.objects.filter(quiz_id=quiz_id).select_related().all()
     
     if request.method == 'POST':
         post_info = request.POST
