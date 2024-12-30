@@ -14,6 +14,7 @@ def id_gen(number=7):
     return id
 
 def validate_input(post_info):
+    #  use the form to validate input
     return  ques_no_image(post_info).is_valid() and ans_text(post_info).is_valid() and correct_ans_text(post_info).is_valid() or ques(post_info).is_valid() or ans(post_info).is_valid() or correct_ans(post_info).is_valid() or ans_img_text(post_info) or correct_ans_image(post_info).is_valid() or ans_image(post_info).is_valid()
 
 
@@ -37,6 +38,7 @@ def home(request,  user=None,*args):
                 return render(request, 'test_created.html', {'quiz_name':quiz_name,'quiz_id':quiz_id})
             except Exception as e:
                 error = e.args[0]
+                # during developments i found only two errors all about unique constraints this is what i use to solve them, if quiz_id i generate a new one and if it's a quiz_name a random string is added to it
                 if error ==  'UNIQUE constraint failed: studybud_quiz.quiz_id':
                     quiz_id = id_gen()
                     Quiz.objects.create(user=user, quiz_id=quiz_id, quiz_name=quiz_name).save()
@@ -217,14 +219,16 @@ def check_answer(request, user=None,*args):
     if post_info:
         question = post_info.getlist('question')
         filters = Answers.objects.filter(ques_id__in = question).select_related().all()
+        # loop over the question and check if the answer is correct
         for ques in question:
             for answer in filters:
                 if answer.ans_correct:
                     anss = answer.ans
                     quiz_id=answer.quiz_id
-                
+                # get the answers for the current questions
                 if answer.ques_id.ques_id == ques:
-                    chosen_answer  = post_info.get(ques)
+                    # get the answer you chose and check mif it's right and wrong
+                    chosen_answer  = post_info.get(ques) 
                     if chosen_answer == answer.ans_id and answer.ans_correct:
                         context = {
                         'question':answer.ques_id.ques,
@@ -233,9 +237,11 @@ def check_answer(request, user=None,*args):
                     }
                         correct.append(context)
                         correct_len +=1
+                        # generate template if correct and add it to the template list to use it to generate the result
                         template = render_to_string('check.html', context)
                         lst_template.append(template)
                     else:
+
                         if chosen_answer == answer.ans_id and not answer.ans_correct:
                             chosen_answer = answer.ans
                             context = {
@@ -246,9 +252,11 @@ def check_answer(request, user=None,*args):
                             }
                             wrong.append(context)
                             wrong_len+=1
+                            # generate template if wrong and add it to the template list to use it to generate the result
                             template = render_to_string('check.html', context)
                             lst_template.append(template)
         score = f'{correct_len}/{correct_len+wrong_len}'
+        # save report to the db
         Report(user=user,quiz_id=quiz_id,score=score,wrong=wrong, correct=correct, correct_len=correct_len, wrong_len=wrong_len).save()
             
         return render(request, 'results.html', {'lst_template':lst_template, 'correct_ans':correct_len, 'total':correct_len+wrong_len})
@@ -260,6 +268,7 @@ def check_answer(request, user=None,*args):
 def report(request, user=None,*args, **kwargs):
 
     quiz_id = kwargs.get('quiz_id')
+    # get reports from the db and render it to the report template
     get_report = Report.objects.filter(quiz_id=quiz_id, user=request.user).select_related()
 
     if get_report:
@@ -271,6 +280,7 @@ def report(request, user=None,*args, **kwargs):
 
 @login_required
 def get_form(request, user=None,*args, **kwargs):
+    # generate form based on th get_form and send it back
     what_form = kwargs.get('what_form')
 
     
@@ -288,6 +298,7 @@ def get_form(request, user=None,*args, **kwargs):
 
 @login_required
 def delete(request, user,*args, **kwargs):
+    # get what to delete and the id of what to delete and delete it
     type = str(kwargs.get('type')).lower()
     id = kwargs.get('id')
 
@@ -295,9 +306,19 @@ def delete(request, user,*args, **kwargs):
         Quiz.objects.filter(quiz_id=id, user=user).delete()
         return HttpResponse('Quiz Deleted')
     if type == 'question':
-        Questions.objects.filter(ques_id=id).delete()
-        return HttpResponse('Question Deleted')
+        question = Questions.objects.filter(ques_id=id).select_related()
+        # check if the one deletint it owns it
+        if question[0].quiz_id.user == user:
+            question.delete()
+            return HttpResponse('Question Deleted')
+        return HttpResponse('You do not own this question')
+    
     if type == 'answer':
-        Answers.objects.filter(ans_id=id).delete()
-        return HttpResponse('Answer Deleted')
+        answer = Answers.objects.filter(ans_id=id).select_related()
+        
+        # check if the one deletint it owns it
+        if answer[0].quiz_id.user == user:
+            answer.delete()
+            return HttpResponse('Answer Deleted')
+        return HttpResponse('You do not own this question')
     return 
