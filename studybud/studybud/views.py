@@ -129,7 +129,6 @@ def edit_question(request, user=None,*args, **kwargs):
     ques_id = kwargs.get('ques_id')
     
     ques_query = Questions.objects.select_related().filter(ques_id=ques_id)
-    quizid = ques_query[0].quiz_id.quiz_id
     if request.method == 'POST':
         post_info = request.POST
         images = request.FILES
@@ -178,7 +177,7 @@ def edit_question(request, user=None,*args, **kwargs):
         'id':ques_id,
         'quiz_id':quiz_id,
         'can_practice': True,
-        'quiz_id': quizid,
+        'quiz_id': quiz_id,
 
     }
     return render(request, 'edit_question.html', context)
